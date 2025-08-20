@@ -86,7 +86,7 @@
                     <i class="fa fa-file-video-o text-5xl text-gray-400 mb-4 transition-colors"></i>
                     <h4 class="text-xl font-medium mb-2">拖放SRT文件到这里，或点击选择文件</h4>
                     <p class="text-gray-500 text-lg mb-4">支持标准格式的.srt字幕文件</p>
-                    <label class="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base">
+                    <label class="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base file-label">
                         <i class="fa fa-folder-open mr-2"></i>选择SRT文件
                         <input type="file" id="srt-file-input" class="hidden" accept=".srt">
                     </label>
@@ -164,7 +164,7 @@
                     <i class="fa fa-file-excel-o text-5xl text-gray-400 mb-4 transition-colors"></i>
                     <h4 class="text-xl font-medium mb-2">拖放Excel文件到这里，或点击选择文件</h4>
                     <p class="text-gray-500 text-lg mb-4">支持.xlsx和.xls格式，请确保符合上述格式要求</p>
-                    <label class="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base">
+                    <label class="bg-primary/10 hover:bg-primary/20 text-primary font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base file-label">
                         <i class="fa fa-folder-open mr-2"></i>选择Excel文件
                         <input type="file" id="excel-file-input" class="hidden" accept=".xlsx, .xls">
                     </label>
@@ -261,511 +261,522 @@
     </footer>
 
     <script>
-        // 全局变量存储处理后的数据
-        let srtData = null;
-        let excelData = null;
-        let originalFileName = '';
+        // 等待DOM完全加载后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 全局变量存储处理后的数据
+            let srtData = null;
+            let excelData = null;
+            let originalFileName = '';
 
-        // DOM元素
-        // 选项卡元素
-        const srtToExcelTab = document.getElementById('srt-to-excel-tab');
-        const excelToSrtTab = document.getElementById('excel-to-srt-tab');
-        const srtToExcelSection = document.getElementById('srt-to-excel-section');
-        const excelToSrtSection = document.getElementById('excel-to-srt-section');
+            // DOM元素
+            // 选项卡元素
+            const srtToExcelTab = document.getElementById('srt-to-excel-tab');
+            const excelToSrtTab = document.getElementById('excel-to-srt-tab');
+            const srtToExcelSection = document.getElementById('srt-to-excel-section');
+            const excelToSrtSection = document.getElementById('excel-to-srt-section');
 
-        // SRT转Excel元素
-        const srtDropArea = document.getElementById('srt-drop-area');
-        const srtFileInput = document.getElementById('srt-file-input');
-        const srtPreview = document.getElementById('srt-preview');
-        const srtContent = document.getElementById('srt-content');
-        const srtActions = document.getElementById('srt-actions');
-        const convertSrtBtn = document.getElementById('convert-srt-btn');
-        const resetSrtBtn = document.getElementById('reset-srt-btn');
-        const srtResult = document.getElementById('srt-result');
-        const downloadExcelBtn = document.getElementById('download-excel-btn');
-        const srtError = document.getElementById('srt-error');
-        const srtErrorMessage = document.getElementById('srt-error-message');
+            // SRT转Excel元素
+            const srtDropArea = document.getElementById('srt-drop-area');
+            const srtFileInput = document.getElementById('srt-file-input');
+            const srtPreview = document.getElementById('srt-preview');
+            const srtContent = document.getElementById('srt-content');
+            const srtActions = document.getElementById('srt-actions');
+            const convertSrtBtn = document.getElementById('convert-srt-btn');
+            const resetSrtBtn = document.getElementById('reset-srt-btn');
+            const srtResult = document.getElementById('srt-result');
+            const downloadExcelBtn = document.getElementById('download-excel-btn');
+            const srtError = document.getElementById('srt-error');
+            const srtErrorMessage = document.getElementById('srt-error-message');
 
-        // Excel转SRT元素
-        const excelDropArea = document.getElementById('excel-drop-area');
-        const excelFileInput = document.getElementById('excel-file-input');
-        const excelPreview = document.getElementById('excel-preview');
-        const excelContent = document.getElementById('excel-content');
-        const excelActions = document.getElementById('excel-actions');
-        const convertExcelBtn = document.getElementById('convert-excel-btn');
-        const resetExcelBtn = document.getElementById('reset-excel-btn');
-        const excelResult = document.getElementById('excel-result');
-        const downloadSrtBtn = document.getElementById('download-srt-btn');
-        const excelError = document.getElementById('excel-error');
-        const excelErrorMessage = document.getElementById('excel-error-message');
+            // Excel转SRT元素
+            const excelDropArea = document.getElementById('excel-drop-area');
+            const excelFileInput = document.getElementById('excel-file-input');
+            const excelPreview = document.getElementById('excel-preview');
+            const excelContent = document.getElementById('excel-content');
+            const excelActions = document.getElementById('excel-actions');
+            const convertExcelBtn = document.getElementById('convert-excel-btn');
+            const resetExcelBtn = document.getElementById('reset-excel-btn');
+            const excelResult = document.getElementById('excel-result');
+            const downloadSrtBtn = document.getElementById('download-srt-btn');
+            const excelError = document.getElementById('excel-error');
+            const excelErrorMessage = document.getElementById('excel-error-message');
 
-        // 选项卡切换
-        srtToExcelTab.addEventListener('click', () => {
-            srtToExcelTab.classList.add('tab-active');
-            excelToSrtTab.classList.remove('tab-active');
-            excelToSrtTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            srtToExcelSection.classList.remove('hidden');
-            excelToSrtSection.classList.add('hidden');
-            resetSRTConversion();
-        });
+            // 选项卡切换
+            srtToExcelTab.addEventListener('click', () => {
+                srtToExcelTab.classList.add('tab-active');
+                excelToSrtTab.classList.remove('tab-active');
+                excelToSrtTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                srtToExcelSection.classList.remove('hidden');
+                excelToSrtSection.classList.add('hidden');
+                resetSRTConversion();
+            });
 
-        excelToSrtTab.addEventListener('click', () => {
-            excelToSrtTab.classList.add('tab-active');
-            srtToExcelTab.classList.remove('tab-active');
-            srtToExcelTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
-            excelToSrtSection.classList.remove('hidden');
-            srtToExcelSection.classList.add('hidden');
-            resetExcelConversion();
-        });
+            excelToSrtTab.addEventListener('click', () => {
+                excelToSrtTab.classList.add('tab-active');
+                srtToExcelTab.classList.remove('tab-active');
+                srtToExcelTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                excelToSrtSection.classList.remove('hidden');
+                srtToExcelSection.classList.add('hidden');
+                resetExcelConversion();
+            });
 
-        // SRT文件拖放处理
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            srtDropArea.addEventListener(eventName, preventDefaults, false);
-            excelDropArea.addEventListener(eventName, preventDefaults, false);
-        });
+            // SRT文件拖放处理
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                srtDropArea.addEventListener(eventName, preventDefaults, false);
+                excelDropArea.addEventListener(eventName, preventDefaults, false);
+            });
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            srtDropArea.addEventListener(eventName, highlightSRT, false);
-            excelDropArea.addEventListener(eventName, highlightExcel, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            srtDropArea.addEventListener(eventName, unhighlightSRT, false);
-            excelDropArea.addEventListener(eventName, unhighlightExcel, false);
-        });
-
-        function highlightSRT() {
-            srtDropArea.classList.add('file-drop-active');
-        }
-
-        function unhighlightSRT() {
-            srtDropArea.classList.remove('file-drop-active');
-        }
-
-        function highlightExcel() {
-            excelDropArea.classList.add('file-drop-active');
-        }
-
-        function unhighlightExcel() {
-            excelDropArea.classList.remove('file-drop-active');
-        }
-
-        srtDropArea.addEventListener('drop', handleSRTDrop, false);
-        excelDropArea.addEventListener('drop', handleExcelDrop, false);
-
-        function handleSRTDrop(e) {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            if (file) {
-                handleSRTFile(file);
-            }
-        }
-
-        function handleExcelDrop(e) {
-            const dt = e.dataTransfer;
-            const file = dt.files[0];
-            if (file) {
-                handleExcelFile(file);
-            }
-        }
-
-        // 文件选择处理
-        srtFileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                handleSRTFile(this.files[0]);
-            }
-        });
-
-        excelFileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                handleExcelFile(this.files[0]);
-            }
-        });
-
-        // 点击上传区域触发文件选择
-        srtDropArea.addEventListener('click', () => {
-            srtFileInput.click();
-        });
-
-        excelDropArea.addEventListener('click', () => {
-            excelFileInput.click();
-        });
-
-        // 处理SRT文件
-        function handleSRTFile(file) {
-            // 检查文件类型
-            if (!file.name.endsWith('.srt')) {
-                showSRTERROR('请选择SRT格式的文件（.srt）');
-                return;
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
             }
 
-            originalFileName = file.name.replace('.srt', '');
-            const reader = new FileReader();
+            ['dragenter', 'dragover'].forEach(eventName => {
+                srtDropArea.addEventListener(eventName, highlightSRT, false);
+                excelDropArea.addEventListener(eventName, highlightExcel, false);
+            });
 
-            reader.onload = function(e) {
-                try {
-                    const content = e.target.result;
-                    // 显示预览
-                    srtContent.textContent = content.length > 1000 ? content.substring(0, 1000) + '...' : content;
-                    srtPreview.classList.remove('hidden');
-                    
-                    // 解析SRT内容
-                    srtData = parseSRT(content);
-                    
-                    // 显示操作按钮
-                    srtActions.classList.remove('hidden');
-                    hideSRTERROR();
-                } catch (error) {
-                    showSRTERROR('解析SRT文件时出错：' + error.message);
+            ['dragleave', 'drop'].forEach(eventName => {
+                srtDropArea.addEventListener(eventName, unhighlightSRT, false);
+                excelDropArea.addEventListener(eventName, unhighlightExcel, false);
+            });
+
+            function highlightSRT() {
+                srtDropArea.classList.add('file-drop-active');
+            }
+
+            function unhighlightSRT() {
+                srtDropArea.classList.remove('file-drop-active');
+            }
+
+            function highlightExcel() {
+                excelDropArea.classList.add('file-drop-active');
+            }
+
+            function unhighlightExcel() {
+                excelDropArea.classList.remove('file-drop-active');
+            }
+
+            srtDropArea.addEventListener('drop', handleSRTDrop, false);
+            excelDropArea.addEventListener('drop', handleExcelDrop, false);
+
+            function handleSRTDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) {
+                    handleSRTFile(file);
                 }
-            };
+            }
 
-            reader.onerror = function() {
-                showSRTERROR('读取文件时出错，请重试');
-            };
+            function handleExcelDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) {
+                    handleExcelFile(file);
+                }
+            }
 
-            reader.readAsText(file);
-        }
+            // 文件选择处理 - 修复二次弹窗问题的核心
+            srtFileInput.addEventListener('change', function(e) {
+                e.stopPropagation(); // 阻止事件冒泡
+                if (this.files.length > 0) {
+                    handleSRTFile(this.files[0]);
+                }
+            });
 
-        // 解析SRT文件内容
-        function parseSRT(content) {
-            // 分割为字幕块
-            const blocks = content.split(/\r?\n\r?\n/).filter(block => block.trim() !== '');
-            const subtitles = [];
+            excelFileInput.addEventListener('change', function(e) {
+                e.stopPropagation(); // 阻止事件冒泡
+                if (this.files.length > 0) {
+                    handleExcelFile(this.files[0]);
+                }
+            });
 
-            blocks.forEach((block, index) => {
-                try {
-                    const lines = block.split(/\r?\n/).filter(line => line.trim() !== '');
-                    
-                    // 提取序号（可能在第一行）
-                    let sequence = index + 1; // 默认使用索引+1作为序号
-                    let timeLineIndex = 0;
-                    
-                    if (/^\d+$/.test(lines[0].trim())) {
-                        sequence = parseInt(lines[0].trim(), 10);
-                        timeLineIndex = 1;
+            // 为文件选择标签添加事件处理，防止冒泡
+            document.querySelectorAll('.file-label').forEach(label => {
+                label.addEventListener('click', function(e) {
+                    e.stopPropagation(); // 关键：防止点击事件冒泡到父容器
+                });
+            });
+
+            // 点击上传区域触发文件选择
+            srtDropArea.addEventListener('click', () => {
+                srtFileInput.click();
+            });
+
+            excelDropArea.addEventListener('click', () => {
+                excelFileInput.click();
+            });
+
+            // 处理SRT文件
+            function handleSRTFile(file) {
+                // 检查文件类型
+                if (!file.name.endsWith('.srt')) {
+                    showSRTERROR('请选择SRT格式的文件（.srt）');
+                    return;
+                }
+
+                originalFileName = file.name.replace('.srt', '');
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    try {
+                        const content = e.target.result;
+                        // 显示预览
+                        srtContent.textContent = content.length > 1000 ? content.substring(0, 1000) + '...' : content;
+                        srtPreview.classList.remove('hidden');
+                        
+                        // 解析SRT内容
+                        srtData = parseSRT(content);
+                        
+                        // 显示操作按钮
+                        srtActions.classList.remove('hidden');
+                        hideSRTERROR();
+                    } catch (error) {
+                        showSRTERROR('解析SRT文件时出错：' + error.message);
                     }
-                    
-                    // 提取时间码
-                    if (timeLineIndex >= lines.length) {
-                        throw new Error('无效的字幕块格式，缺少时间码');
+                };
+
+                reader.onerror = function() {
+                    showSRTERROR('读取文件时出错，请重试');
+                };
+
+                reader.readAsText(file);
+            }
+
+            // 解析SRT文件内容
+            function parseSRT(content) {
+                // 分割为字幕块
+                const blocks = content.split(/\r?\n\r?\n/).filter(block => block.trim() !== '');
+                const subtitles = [];
+
+                blocks.forEach((block, index) => {
+                    try {
+                        const lines = block.split(/\r?\n/).filter(line => line.trim() !== '');
+                        
+                        // 提取序号（可能在第一行）
+                        let sequence = index + 1; // 默认使用索引+1作为序号
+                        let timeLineIndex = 0;
+                        
+                        if (/^\d+$/.test(lines[0].trim())) {
+                            sequence = parseInt(lines[0].trim(), 10);
+                            timeLineIndex = 1;
+                        }
+                        
+                        // 提取时间码
+                        if (timeLineIndex >= lines.length) {
+                            throw new Error('无效的字幕块格式，缺少时间码');
+                        }
+                        
+                        const timeLine = lines[timeLineIndex].trim();
+                        const timeParts = timeLine.split(/-->|\-\-\>/).map(part => part.trim());
+                        
+                        if (timeParts.length !== 2) {
+                            throw new Error('时间码格式不正确，应为 "开始时间 --> 结束时间"');
+                        }
+                        
+                        const startTime = timeParts[0];
+                        const endTime = timeParts[1];
+                        
+                        // 提取字幕内容
+                        const textLines = lines.slice(timeLineIndex + 1);
+                        const text = textLines.join('\n').trim();
+                        
+                        if (!text) {
+                            throw new Error('字幕内容不能为空');
+                        }
+                        
+                        subtitles.push({
+                            sequence,
+                            startTime,
+                            endTime,
+                            text
+                        });
+                    } catch (error) {
+                        console.error(`解析字幕块 ${index + 1} 时出错:`, error);
+                        throw new Error(`解析字幕块 ${index + 1} 时出错: ${error.message}`);
                     }
-                    
-                    const timeLine = lines[timeLineIndex].trim();
-                    const timeParts = timeLine.split(/-->|\-\-\>/).map(part => part.trim());
-                    
-                    if (timeParts.length !== 2) {
-                        throw new Error('时间码格式不正确，应为 "开始时间 --> 结束时间"');
+                });
+
+                if (subtitles.length === 0) {
+                    throw new Error('未找到有效的字幕内容');
+                }
+
+                return subtitles;
+            }
+
+            // 处理Excel文件
+            function handleExcelFile(file) {
+                // 检查文件类型
+                if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                    showExcelError('请选择Excel格式的文件（.xlsx 或 .xls）');
+                    return;
+                }
+
+                originalFileName = file.name.replace(/\.(xlsx|xls)$/, '');
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // 获取第一个工作表
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // 转换为JSON
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        // 验证Excel格式
+                        validateExcelFormat(jsonData);
+                        
+                        // 存储数据（跳过标题行）
+                        excelData = jsonData.slice(1);
+                        
+                        // 显示预览
+                        displayExcelPreview(jsonData);
+                        excelPreview.classList.remove('hidden');
+                        
+                        // 显示操作按钮
+                        excelActions.classList.remove('hidden');
+                        hideExcelError();
+                    } catch (error) {
+                        showExcelError('解析Excel文件时出错：' + error.message);
                     }
-                    
-                    const startTime = timeParts[0];
-                    const endTime = timeParts[1];
-                    
-                    // 提取字幕内容
-                    const textLines = lines.slice(timeLineIndex + 1);
-                    const text = textLines.join('\n').trim();
-                    
-                    if (!text) {
-                        throw new Error('字幕内容不能为空');
+                };
+
+                reader.onerror = function() {
+                    showExcelError('读取文件时出错，请重试');
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+
+            // 验证Excel格式
+            function validateExcelFormat(data) {
+                // 检查是否有数据
+                if (data.length < 2) {
+                    throw new Error('Excel文件内容为空或格式不正确，至少需要标题行和一行数据');
+                }
+                
+                // 检查标题行
+                const headerRow = data[0];
+                if (headerRow.length < 4) {
+                    throw new Error('Excel文件格式不正确，至少需要4列数据');
+                }
+                
+                // 检查标题是否符合要求（不区分大小写）
+                const expectedHeaders = ['序号', '开始时间码', '结束时间码', '字幕内容'];
+                const actualHeaders = headerRow.slice(0, 4).map(h => h.toString().trim());
+                
+                for (let i = 0; i < 4; i++) {
+                    if (actualHeaders[i].toLowerCase() !== expectedHeaders[i].toLowerCase()) {
+                        throw new Error(`Excel文件第${i+1}列标题应为"${expectedHeaders[i]}"，实际为"${actualHeaders[i]}"`);
                     }
-                    
-                    subtitles.push({
-                        sequence,
-                        startTime,
-                        endTime,
-                        text
+                }
+                
+                // 检查至少有一行数据
+                if (data.length < 2) {
+                    throw new Error('Excel文件中没有找到字幕数据，请确保有至少一行数据');
+                }
+            }
+
+            // 显示Excel预览
+            function displayExcelPreview(data) {
+                // 创建表格
+                let html = '<table class="min-w-full border-collapse">';
+                
+                // 表头
+                html += '<thead><tr class="bg-gray-100">';
+                data[0].slice(0, 4).forEach(header => {
+                    html += `<th class="border p-2 text-left">${header}</th>`;
+                });
+                html += '</tr></thead>';
+                
+                // 数据行（最多显示10行）
+                html += '<tbody>';
+                const rowsToShow = Math.min(10, data.length - 1);
+                for (let i = 1; i <= rowsToShow; i++) {
+                    html += '<tr class="' + (i % 2 === 0 ? 'bg-gray-50' : 'bg-white') + '">';
+                    data[i].slice(0, 4).forEach(cell => {
+                        html += `<td class="border p-2">${cell || ''}</td>`;
                     });
-                } catch (error) {
-                    console.error(`解析字幕块 ${index + 1} 时出错:`, error);
-                    throw new Error(`解析字幕块 ${index + 1} 时出错: ${error.message}`);
+                    html += '</tr>';
                 }
-            });
-
-            if (subtitles.length === 0) {
-                throw new Error('未找到有效的字幕内容');
+                
+                // 如果有更多行，显示省略提示
+                if (data.length - 1 > rowsToShow) {
+                    html += '<tr><td colspan="4" class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
+                }
+                
+                html += '</tbody></table>';
+                excelContent.innerHTML = html;
             }
 
-            return subtitles;
-        }
+            // 转换SRT到Excel
+            convertSrtBtn.addEventListener('click', () => {
+                if (!srtData || srtData.length === 0) {
+                    showSRTERROR('没有可转换的SRT数据，请重新上传文件');
+                    return;
+                }
 
-        // 处理Excel文件
-        function handleExcelFile(file) {
-            // 检查文件类型
-            if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-                showExcelError('请选择Excel格式的文件（.xlsx 或 .xls）');
-                return;
-            }
-
-            originalFileName = file.name.replace(/\.(xlsx|xls)$/, '');
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    // 创建工作簿和工作表
+                    const wsData = [
+                        ['序号', '开始时间码', '结束时间码', '字幕内容'] // 表头
+                    ];
                     
-                    // 获取第一个工作表
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
+                    // 添加数据行
+                    srtData.forEach(subtitle => {
+                        wsData.push([
+                            subtitle.sequence,
+                            subtitle.startTime,
+                            subtitle.endTime,
+                            subtitle.text
+                        ]);
+                    });
                     
-                    // 转换为JSON
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    // 创建工作表
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
                     
-                    // 验证Excel格式
-                    validateExcelFormat(jsonData);
+                    // 创建工作簿并添加工作表
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "字幕数据");
                     
-                    // 存储数据（跳过标题行）
-                    excelData = jsonData.slice(1);
+                    // 隐藏操作按钮，显示结果
+                    srtActions.classList.add('hidden');
+                    srtResult.classList.remove('hidden');
                     
-                    // 显示预览
-                    displayExcelPreview(jsonData);
-                    excelPreview.classList.remove('hidden');
+                    // 准备下载功能
+                    downloadExcelBtn.onclick = function() {
+                        // 生成Excel文件并下载
+                        XLSX.writeFile(wb, `${originalFileName}_字幕.xlsx`);
+                    };
                     
-                    // 显示操作按钮
-                    excelActions.classList.remove('hidden');
-                    hideExcelError();
                 } catch (error) {
-                    showExcelError('解析Excel文件时出错：' + error.message);
+                    showSRTERROR('转换为Excel时出错：' + error.message);
                 }
-            };
-
-            reader.onerror = function() {
-                showExcelError('读取文件时出错，请重试');
-            };
-
-            reader.readAsArrayBuffer(file);
-        }
-
-        // 验证Excel格式
-        function validateExcelFormat(data) {
-            // 检查是否有数据
-            if (data.length < 2) {
-                throw new Error('Excel文件内容为空或格式不正确，至少需要标题行和一行数据');
-            }
-            
-            // 检查标题行
-            const headerRow = data[0];
-            if (headerRow.length < 4) {
-                throw new Error('Excel文件格式不正确，至少需要4列数据');
-            }
-            
-            // 检查标题是否符合要求（不区分大小写）
-            const expectedHeaders = ['序号', '开始时间码', '结束时间码', '字幕内容'];
-            const actualHeaders = headerRow.slice(0, 4).map(h => h.toString().trim());
-            
-            for (let i = 0; i < 4; i++) {
-                if (actualHeaders[i].toLowerCase() !== expectedHeaders[i].toLowerCase()) {
-                    throw new Error(`Excel文件第${i+1}列标题应为"${expectedHeaders[i]}"，实际为"${actualHeaders[i]}"`);
-                }
-            }
-            
-            // 检查至少有一行数据
-            if (data.length < 2) {
-                throw new Error('Excel文件中没有找到字幕数据，请确保有至少一行数据');
-            }
-        }
-
-        // 显示Excel预览
-        function displayExcelPreview(data) {
-            // 创建表格
-            let html = '<table class="min-w-full border-collapse">';
-            
-            // 表头
-            html += '<thead><tr class="bg-gray-100">';
-            data[0].slice(0, 4).forEach(header => {
-                html += `<th class="border p-2 text-left">${header}</th>`;
             });
-            html += '</tr></thead>';
-            
-            // 数据行（最多显示10行）
-            html += '<tbody>';
-            const rowsToShow = Math.min(10, data.length - 1);
-            for (let i = 1; i <= rowsToShow; i++) {
-                html += '<tr class="' + (i % 2 === 0 ? 'bg-gray-50' : 'bg-white') + '">';
-                data[i].slice(0, 4).forEach(cell => {
-                    html += `<td class="border p-2">${cell || ''}</td>`;
-                });
-                html += '</tr>';
-            }
-            
-            // 如果有更多行，显示省略提示
-            if (data.length - 1 > rowsToShow) {
-                html += '<tr><td colspan="4" class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
-            }
-            
-            html += '</tbody></table>';
-            excelContent.innerHTML = html;
-        }
 
-        // 转换SRT到Excel
-        convertSrtBtn.addEventListener('click', () => {
-            if (!srtData || srtData.length === 0) {
-                showSRTERROR('没有可转换的SRT数据，请重新上传文件');
-                return;
+            // 转换Excel到SRT
+            convertExcelBtn.addEventListener('click', () => {
+                if (!excelData || excelData.length === 0) {
+                    showExcelError('没有可转换的Excel数据，请重新上传文件');
+                    return;
+                }
+
+                try {
+                    let srtContent = '';
+                    
+                    excelData.forEach((row, index) => {
+                        // 验证行数据
+                        if (!row || row.length < 4) {
+                            throw new Error(`第${index + 2}行数据不完整，需要包含序号、开始时间码、结束时间码和字幕内容`);
+                        }
+                        
+                        const sequence = row[0];
+                        const startTime = row[1];
+                        const endTime = row[2];
+                        const text = row[3];
+                        
+                        // 验证时间格式
+                        if (!isValidTimeFormat(startTime)) {
+                            throw new Error(`第${index + 2}行的开始时间码格式不正确，应为 HH:MM:SS,mmm`);
+                        }
+                        
+                        if (!isValidTimeFormat(endTime)) {
+                            throw new Error(`第${index + 2}行的结束时间码格式不正确，应为 HH:MM:SS,mmm`);
+                        }
+                        
+                        // 验证字幕内容
+                        if (!text || text.toString().trim() === '') {
+                            throw new Error(`第${index + 2}行的字幕内容不能为空`);
+                        }
+                        
+                        // 添加到SRT内容
+                        srtContent += `${sequence}\n`;
+                        srtContent += `${startTime} --> ${endTime}\n`;
+                        srtContent += `${text}\n\n`;
+                    });
+                    
+                    // 隐藏操作按钮，显示结果
+                    excelActions.classList.add('hidden');
+                    excelResult.classList.remove('hidden');
+                    
+                    // 准备下载功能
+                    downloadSrtBtn.onclick = function() {
+                        // 创建Blob并下载
+                        const blob = new Blob([srtContent], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${originalFileName}.srt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    };
+                    
+                } catch (error) {
+                    showExcelError('转换为SRT时出错：' + error.message);
+                }
+            });
+
+            // 验证时间格式 (HH:MM:SS,mmm)
+            function isValidTimeFormat(time) {
+                const timeRegex = /^\d{2}:\d{2}:\d{2},\d{3}$/;
+                return timeRegex.test(time.toString().trim());
             }
 
-            try {
-                // 创建工作簿和工作表
-                const wsData = [
-                    ['序号', '开始时间码', '结束时间码', '字幕内容'] // 表头
-                ];
-                
-                // 添加数据行
-                srtData.forEach(subtitle => {
-                    wsData.push([
-                        subtitle.sequence,
-                        subtitle.startTime,
-                        subtitle.endTime,
-                        subtitle.text
-                    ]);
-                });
-                
-                // 创建工作表
-                const ws = XLSX.utils.aoa_to_sheet(wsData);
-                
-                // 创建工作簿并添加工作表
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "字幕数据");
-                
-                // 隐藏操作按钮，显示结果
+            // 重置SRT转换
+            resetSrtBtn.addEventListener('click', resetSRTConversion);
+
+            function resetSRTConversion() {
+                srtFileInput.value = '';
+                srtData = null;
+                srtPreview.classList.add('hidden');
+                srtContent.textContent = '';
                 srtActions.classList.add('hidden');
-                srtResult.classList.remove('hidden');
-                
-                // 准备下载功能
-                downloadExcelBtn.onclick = function() {
-                    // 生成Excel文件并下载
-                    XLSX.writeFile(wb, `${originalFileName}_字幕.xlsx`);
-                };
-                
-            } catch (error) {
-                showSRTERROR('转换为Excel时出错：' + error.message);
-            }
-        });
-
-        // 转换Excel到SRT
-        convertExcelBtn.addEventListener('click', () => {
-            if (!excelData || excelData.length === 0) {
-                showExcelError('没有可转换的Excel数据，请重新上传文件');
-                return;
+                srtResult.classList.add('hidden');
+                hideSRTERROR();
+                originalFileName = '';
             }
 
-            try {
-                let srtContent = '';
-                
-                excelData.forEach((row, index) => {
-                    // 验证行数据
-                    if (!row || row.length < 4) {
-                        throw new Error(`第${index + 2}行数据不完整，需要包含序号、开始时间码、结束时间码和字幕内容`);
-                    }
-                    
-                    const sequence = row[0];
-                    const startTime = row[1];
-                    const endTime = row[2];
-                    const text = row[3];
-                    
-                    // 验证时间格式
-                    if (!isValidTimeFormat(startTime)) {
-                        throw new Error(`第${index + 2}行的开始时间码格式不正确，应为 HH:MM:SS,mmm`);
-                    }
-                    
-                    if (!isValidTimeFormat(endTime)) {
-                        throw new Error(`第${index + 2}行的结束时间码格式不正确，应为 HH:MM:SS,mmm`);
-                    }
-                    
-                    // 验证字幕内容
-                    if (!text || text.toString().trim() === '') {
-                        throw new Error(`第${index + 2}行的字幕内容不能为空`);
-                    }
-                    
-                    // 添加到SRT内容
-                    srtContent += `${sequence}\n`;
-                    srtContent += `${startTime} --> ${endTime}\n`;
-                    srtContent += `${text}\n\n`;
-                });
-                
-                // 隐藏操作按钮，显示结果
+            // 重置Excel转换
+            resetExcelBtn.addEventListener('click', resetExcelConversion);
+
+            function resetExcelConversion() {
+                excelFileInput.value = '';
+                excelData = null;
+                excelPreview.classList.add('hidden');
+                excelContent.innerHTML = '';
                 excelActions.classList.add('hidden');
-                excelResult.classList.remove('hidden');
-                
-                // 准备下载功能
-                downloadSrtBtn.onclick = function() {
-                    // 创建Blob并下载
-                    const blob = new Blob([srtContent], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${originalFileName}.srt`;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(url);
-                };
-                
-            } catch (error) {
-                showExcelError('转换为SRT时出错：' + error.message);
+                excelResult.classList.add('hidden');
+                hideExcelError();
+                originalFileName = '';
+            }
+
+            // 错误处理函数
+            function showSRTERROR(message) {
+                srtErrorMessage.textContent = message;
+                srtError.classList.remove('hidden');
+                srtResult.classList.add('hidden');
+            }
+
+            function hideSRTERROR() {
+                srtError.classList.add('hidden');
+            }
+
+            function showExcelError(message) {
+                excelErrorMessage.textContent = message;
+                excelError.classList.remove('hidden');
+                excelResult.classList.add('hidden');
+            }
+
+            function hideExcelError() {
+                excelError.classList.add('hidden');
             }
         });
-
-        // 验证时间格式 (HH:MM:SS,mmm)
-        function isValidTimeFormat(time) {
-            const timeRegex = /^\d{2}:\d{2}:\d{2},\d{3}$/;
-            return timeRegex.test(time.toString().trim());
-        }
-
-        // 重置SRT转换
-        resetSrtBtn.addEventListener('click', resetSRTConversion);
-
-        function resetSRTConversion() {
-            srtFileInput.value = '';
-            srtData = null;
-            srtPreview.classList.add('hidden');
-            srtContent.textContent = '';
-            srtActions.classList.add('hidden');
-            srtResult.classList.add('hidden');
-            hideSRTERROR();
-            originalFileName = '';
-        }
-
-        // 重置Excel转换
-        resetExcelBtn.addEventListener('click', resetExcelConversion);
-
-        function resetExcelConversion() {
-            excelFileInput.value = '';
-            excelData = null;
-            excelPreview.classList.add('hidden');
-            excelContent.innerHTML = '';
-            excelActions.classList.add('hidden');
-            excelResult.classList.add('hidden');
-            hideExcelError();
-            originalFileName = '';
-        }
-
-        // 错误处理函数
-        function showSRTERROR(message) {
-            srtErrorMessage.textContent = message;
-            srtError.classList.remove('hidden');
-            srtResult.classList.add('hidden');
-        }
-
-        function hideSRTERROR() {
-            srtError.classList.add('hidden');
-        }
-
-        function showExcelError(message) {
-            excelErrorMessage.textContent = message;
-            excelError.classList.remove('hidden');
-            excelResult.classList.add('hidden');
-        }
-
-        function hideExcelError() {
-            excelError.classList.add('hidden');
-        }
     </script>
-
-
-    </body></html>
+</body></html>
+    
