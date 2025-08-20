@@ -16,7 +16,8 @@
                         secondary: '#10B981',
                         accent: '#8B5CF6',
                         dark: '#1E293B',
-                        light: '#F8FAFC'
+                        light: '#F8FAFC',
+                        tertiary: '#F59E0B' // 用于Excel字幕脚本整理功能的颜色
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
@@ -37,6 +38,9 @@
             .tab-active {
                 @apply bg-primary text-white;
             }
+            .tab-active-tertiary {
+                @apply bg-tertiary text-white;
+            }
         }
     </style>
 </head>
@@ -46,9 +50,9 @@
         <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center space-x-2 mb-4 md:mb-0">
                 <i class="fa fa-file-text-o text-primary text-2xl"></i>
-                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">SRT与Excel互转工具</h1>
+                <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">视频字幕批量替换流程</h1>
             </div>
-            <p class="text-gray-600 text-base text-center md:text-right">所有处理均在本地完成，保护您的隐私</p>
+            <p class="text-gray-600 text-base text-center md:text-right">所有处理均在网页完成，保护您的隐私</p>
         </div>
     </header>
 
@@ -56,19 +60,21 @@
     <main class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- 介绍部分 -->
         <section class="text-center mb-10">
-            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">轻松实现字幕文件与表格文件的转换</h2>
-            <p class="text-gray-500 italic text-base mb-4">——小李的批量修改字幕工场</p>
-            <p class="text-gray-600 text-lg max-w-2xl mx-auto">这个工具可以帮助您将SRT字幕文件转换为Excel表格以便编辑，也可以将编辑好的Excel表格转换回SRT字幕文件</p>
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">小李的魔术工厂</h2>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">支持SRT与Excel互转，新增"新字幕"列方便编辑，自动优先使用新字幕内容</p>
         </section>
 
         <!-- 转换选项卡 -->
-        <div class="mb-8 border-b border-gray-200">
-            <div class="flex flex-wrap -mb-px">
-                <button id="srt-to-excel-tab" class="tab-active py-4 px-6 font-medium text-base border-b-2 border-transparent rounded-t-lg transition-all">
+        <div class="mb-8 border-b border-gray-200 overflow-x-auto">
+            <div class="flex flex-nowrap -mb-px">
+                <button id="srt-to-excel-tab" class="tab-active py-4 px-6 font-medium text-base border-b-2 border-transparent rounded-t-lg transition-all whitespace-nowrap">
                     <i class="fa fa-file-video-o mr-2"></i>SRT 转 Excel
                 </button>
-                <button id="excel-to-srt-tab" class="py-4 px-6 font-medium text-base text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 rounded-t-lg transition-all">
+                <button id="excel-to-srt-tab" class="py-4 px-6 font-medium text-base text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 rounded-t-lg transition-all whitespace-nowrap">
                     <i class="fa fa-file-excel-o mr-2"></i>Excel 转 SRT
+                </button>
+                <button id="excel-organize-tab" class="py-4 px-6 font-medium text-base text-gray-500 border-b-2 border-transparent hover:text-gray-700 hover:border-gray-300 rounded-t-lg transition-all whitespace-nowrap">
+                    <i class="fa fa-table mr-2"></i>Excel字幕脚本整理
                 </button>
             </div>
         </div>
@@ -90,6 +96,14 @@
                         <i class="fa fa-folder-open mr-2"></i>选择SRT文件
                         <input type="file" id="srt-file-input" class="hidden" accept=".srt">
                     </label>
+                </div>
+
+                <!-- 功能说明 -->
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
+                    <h4 class="text-blue-800 font-medium mb-2 flex items-center text-xl">
+                        <i class="fa fa-info-circle mr-2"></i>转换说明
+                    </h4>
+                    <p class="text-blue-700 text-base">转换后的Excel文件将包含5列：序号、开始时间码、结束时间码、字幕内容、新字幕。"新字幕"列为空白，方便您输入替换内容。</p>
                 </div>
 
                 <!-- 预览区域 -->
@@ -114,7 +128,7 @@
                         <h4 class="text-xl font-medium mb-2 text-green-700 flex items-center">
                             <i class="fa fa-check-circle mr-2"></i>转换成功
                         </h4>
-                        <p class="text-green-600 text-base">SRT文件已成功转换为Excel文件，点击下方按钮下载</p>
+                        <p class="text-green-600 text-base">SRT文件已成功转换为Excel文件，包含"新字幕"列，点击下方按钮下载</p>
                     </div>
                     <div class="flex justify-center">
                         <button id="download-excel-btn" class="bg-accent hover:bg-accent/90 text-white font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-md flex items-center text-base">
@@ -145,17 +159,17 @@
                     </h4>
                     <ul class="text-blue-700 text-base space-y-2 ml-6 list-disc">
                         <li>必须为.xlsx或.xls格式的Excel文件</li>
-                        <li>第一行必须为标题行，包含以下四列（顺序不可更改）：
+                        <li>第一行必须为标题行，包含以下五列（顺序不可更改）：
                             <ul class="ml-6 list-circle mt-1">
                                 <li>第1列：序号（数字格式，如1,2,3...）</li>
                                 <li>第2列：开始时间码（格式必须为HH:MM:SS,mmm，如00:01:23,456）</li>
                                 <li>第3列：结束时间码（格式同上）</li>
-                                <li>第4列：字幕内容（文本格式，可以包含换行）</li>
+                                <li>第4列：字幕内容（原字幕文本，不可为空）</li>
+                                <li>第5列：新字幕（替换用的新字幕，可为空）</li>
                             </ul>
                         </li>
-                        <li>从第二行开始为字幕数据，每行对应一个字幕条目</li>
+                        <li>转换规则：如果"新字幕"列有内容，则使用该内容；否则使用"字幕内容"列的内容</li>
                         <li>时间码中的分隔符必须为英文逗号（,），而非句号（.）</li>
-                        <li>时间码中的小时、分钟、秒、毫秒均需为两位或三位数字（如01而非1）</li>
                     </ul>
                 </div>
 
@@ -209,40 +223,111 @@
                     <p id="excel-error-message" class="text-red-600 text-base"></p>
                 </div>
             </div>
+
+            <!-- Excel字幕脚本整理区域 -->
+            <div id="excel-organize-section" class="hidden">
+                <h3 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fa fa-sort-amount-asc text-tertiary mr-2"></i>Excel字幕脚本整理
+                </h3>
+
+                <!-- 功能说明 -->
+                <div class="bg-amber-50 border border-amber-100 rounded-lg p-4 mb-6">
+                    <h4 class="text-amber-800 font-medium mb-2 flex items-center text-xl">
+                        <i class="fa fa-info-circle mr-2"></i>功能说明
+                    </h4>
+                    <p class="text-amber-700 text-base mb-3">此功能可以帮助您整理字幕脚本Excel文件，自动删除空白行并添加序号</p>
+                    <ul class="text-amber-700 text-base space-y-2 ml-6 list-disc">
+                        <li>上传的Excel文件应只包含1列</li>
+                        <li>第一行必须为标题行，内容为"字幕内容"</li>
+                        <li>程序会自动删除空白行</li>
+                        <li>处理后会在"字幕内容"列左侧添加"序号"列</li>
+                    </ul>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div id="organize-drop-area" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-6 cursor-pointer transition-all duration-300">
+                    <i class="fa fa-file-text-o text-5xl text-gray-400 mb-4 transition-colors"></i>
+                    <h4 class="text-xl font-medium mb-2">拖放Excel文件到这里，或点击选择文件</h4>
+                    <p class="text-gray-500 text-lg mb-4">支持.xlsx和.xls格式，文件应只包含"字幕内容"一列</p>
+                    <label class="bg-tertiary/10 hover:bg-tertiary/20 text-tertiary font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base file-label">
+                        <i class="fa fa-folder-open mr-2"></i>选择Excel文件
+                        <input type="file" id="organize-file-input" class="hidden" accept=".xlsx, .xls">
+                    </label>
+                </div>
+
+                <!-- 预览区域 -->
+                <div id="organize-preview" class="hidden mb-6 max-h-60 overflow-y-auto p-4 border rounded-lg bg-gray-50">
+                    <h4 class="text-xl font-medium mb-3">原始表格内容预览</h4>
+                    <div id="organize-content" class="text-base text-gray-700"></div>
+                </div>
+
+                <!-- 处理后预览区域 -->
+                <div id="organized-result-preview" class="hidden mb-6 max-h-60 overflow-y-auto p-4 border rounded-lg bg-gray-50">
+                    <h4 class="text-xl font-medium mb-3">处理后表格内容预览</h4>
+                    <div id="organized-content" class="text-base text-gray-700"></div>
+                </div>
+
+                <!-- 处理按钮 -->
+                <div id="organize-actions" class="hidden flex justify-center gap-4 mb-6">
+                    <button id="organize-btn" class="bg-tertiary hover:bg-tertiary/90 text-white font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-md flex items-center text-base">
+                        <i class="fa fa-magic mr-2"></i>整理字幕脚本
+                    </button>
+                    <button id="reset-organize-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-sm flex items-center text-base">
+                        <i class="fa fa-refresh mr-2"></i>重置
+                    </button>
+                </div>
+
+                <!-- 处理结果 -->
+                <div id="organize-result" class="hidden">
+                    <div class="p-4 border rounded-lg bg-green-50 mb-4">
+                        <h4 class="text-xl font-medium mb-2 text-green-700 flex items-center">
+                            <i class="fa fa-check-circle mr-2"></i>整理成功
+                        </h4>
+                        <p class="text-green-600 text-base">Excel字幕脚本已成功整理，点击下方按钮下载</p>
+                    </div>
+                    <div class="flex justify-center">
+                        <button id="download-organized-btn" class="bg-tertiary hover:bg-tertiary/90 text-white font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-md flex items-center text-base">
+                            <i class="fa fa-download mr-2"></i>下载整理后的Excel文件
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 错误提示 -->
+                <div id="organize-error" class="hidden p-4 border rounded-lg bg-red-50 mb-4">
+                    <h4 class="text-xl font-medium mb-2 text-red-700 flex items-center">
+                        <i class="fa fa-exclamation-circle mr-2"></i>整理失败
+                    </h4>
+                    <p id="organize-error-message" class="text-red-600 text-base"></p>
+                </div>
+            </div>
         </div>
 
         <!-- 批量修改字幕教程 -->
         <section class="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-10 border-l-4 border-accent">
             <h3 class="text-2xl font-bold mb-6 flex items-center">
-                <i class="fa fa-batch-fx text-accent mr-3"></i>批量修改字幕教程
+                <i class="fa fa-list-ol text-accent mr-3"></i>批量修改字幕教程
             </h3>
             
             <div class="pl-2">
                 <ol class="list-decimal list-inside space-y-4 text-gray-700">
                     <li class="pl-4 pb-2 border-b border-gray-100">
                         <span class="font-medium">导出视频工程文件的字幕</span>
-                        <p class="mt-1 text-gray-600">从您使用的视频编辑软件（如Premiere Pro、Final Cut Pro等）中导出字幕文件，确保导出格式为SRT。不同软件的导出路径可能不同，通常在"文件"或"字幕"菜单中可以找到导出选项。</p>
+                        <p class="mt-1 text-gray-600">从视频编辑软件中导出SRT格式的字幕文件</p>
                     </li>
                     
                     <li class="pl-4 pb-2 border-b border-gray-100">
                         <span class="font-medium">将SRT字幕转换为Excel</span>
-                        <p class="mt-1 text-gray-600">使用本工具的"SRT 转 Excel"功能，上传您导出的SRT文件，点击"转换为Excel"按钮，然后下载转换后的Excel文件。</p>
+                        <p class="mt-1 text-gray-600">使用"SRT 转 Excel"功能，获取包含"新字幕"列的Excel文件</p>
                     </li>
                     
                     <li class="pl-4 pb-2 border-b border-gray-100">
-                        <span class="font-medium">准备需要修改的字幕内容</span>
-                        <p class="mt-1 text-gray-600">整理好所有需要替换的新字幕内容，可以是翻译文本、校正后的文本或全新的字幕内容。</p>
-                    </li>
-                    
-                    <li class="pl-4 pb-2 border-b border-gray-100">
-                        <span class="font-medium">在Excel中批量修改字幕</span>
-                        <p class="mt-1 text-gray-600">用Excel或其他表格软件打开步骤2中下载的文件，找到"字幕内容"列，将其中的旧字幕替换为新的字幕内容。替换完成后，保存Excel文件（保持.xlsx格式）。</p>
-                        <p class="mt-1 text-gray-600 text-sm italic">提示：利用Excel的查找替换功能（Ctrl+H）可以快速批量替换相同的文本内容。</p>
+                        <span class="font-medium">在Excel中输入新字幕</span>
+                        <p class="mt-1 text-gray-600">在"新字幕"列中输入替换内容，无需替换的行可留空（将自动使用原字幕）</p>
                     </li>
                     
                     <li class="pl-4">
-                        <span class="font-medium">将Excel转换回SRT并应用到视频工程</span>
-                        <p class="mt-1 text-gray-600">使用本工具的"Excel 转 SRT"功能，上传修改后的Excel文件，点击"转换为SRT"按钮，下载生成的新SRT文件。最后将新的SRT文件拖放至您的视频编辑工程的字幕轨道中即可。</p>
+                        <span class="font-medium">转换回SRT并应用到视频工程</span>
+                        <p class="mt-1 text-gray-600">使用"Excel 转 SRT"功能，系统会自动优先使用"新字幕"列内容生成SRT文件</p>
                     </li>
                 </ol>
                 
@@ -250,43 +335,7 @@
                     <h4 class="font-medium text-accent mb-2 flex items-center">
                         <i class="fa fa-lightbulb-o mr-2"></i>小贴士
                     </h4>
-                    <p class="text-gray-700 text-sm">修改过程中请不要改动序号和时间码列，否则可能导致字幕与视频不同步。如果需要调整字幕显示时间，请修改"开始时间码"和"结束时间码"列。</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 使用说明 -->
-        <section class="bg-white rounded-2xl shadow-lg p-6 md:p-8 mb-10">
-            <h3 class="text-2xl font-bold mb-6">使用说明</h3>
-            
-            <div class="space-y-6">
-                <div>
-                    <h4 class="text-xl font-semibold mb-3 text-primary">SRT转Excel</h4>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-700 pl-4 text-base">
-                        <li>点击"SRT 转 Excel"选项卡</li>
-                        <li>上传或拖放一个SRT格式的字幕文件</li>
-                        <li>预览文件内容确认无误后，点击"转换为Excel"按钮</li>
-                        <li>转换完成后，点击"下载Excel文件"保存结果</li>
-                        <li>生成的Excel文件将包含：序号、开始时间码、结束时间码、字幕内容四列</li>
-                    </ol>
-                </div>
-                
-                <div>
-                    <h4 class="text-xl font-semibold mb-3 text-primary">Excel转SRT</h4>
-                    <ol class="list-decimal list-inside space-y-2 text-gray-700 pl-4 text-base">
-                        <li>点击"Excel 转 SRT"选项卡</li>
-                        <li>上传或拖放一个符合格式要求的Excel文件</li>
-                        <li>Excel文件必须包含以下列（第一行为标题，顺序不可更改）：
-                            <ul class="list-disc list-inside mt-1 ml-4">
-                                <li>序号：字幕的顺序编号（数字）</li>
-                                <li>开始时间码：字幕开始显示的时间，格式如 00:01:23,456</li>
-                                <li>结束时间码：字幕结束显示的时间，格式同上</li>
-                                <li>字幕内容：要显示的字幕文本</li>
-                            </ul>
-                        </li>
-                        <li>预览文件内容确认无误后，点击"转换为SRT"按钮</li>
-                        <li>转换完成后，点击"下载SRT文件"保存结果</li>
-                    </ol>
+                    <p class="text-gray-700 text-sm">利用Excel的批量编辑功能可以快速处理大量字幕，"新字幕"列留空将自动保留原字幕内容，无需重复输入。</p>
                 </div>
             </div>
         </section>
@@ -297,10 +346,9 @@
         <div class="container mx-auto px-4 text-center">
             <div class="flex items-center justify-center space-x-2 mb-3">
                 <i class="fa fa-file-text-o text-primary"></i>
-                <h2 class="text-xl font-bold">SRT与Excel互转工具</h2>
+                <h2 class="text-xl font-bold">视频字幕工具</h2>
             </div>
-            <p class="text-gray-400 text-base">所有文件处理均在本地完成，不会上传到任何服务器，保护您的隐私安全</p>
-            <p class="text-gray-500 text-sm mt-4">© 2023 SRT与Excel互转工具</p>
+            <p class="text-gray-400 text-base">便捷处理字幕转换与编辑，提升工作效率</p>
         </div>
     </footer>
 
@@ -310,14 +358,17 @@
             // 全局变量存储处理后的数据
             let srtData = null;
             let excelData = null;
+            let organizeData = null;
             let originalFileName = '';
 
             // DOM元素
             // 选项卡元素
             const srtToExcelTab = document.getElementById('srt-to-excel-tab');
             const excelToSrtTab = document.getElementById('excel-to-srt-tab');
+            const excelOrganizeTab = document.getElementById('excel-organize-tab');
             const srtToExcelSection = document.getElementById('srt-to-excel-section');
             const excelToSrtSection = document.getElementById('excel-to-srt-section');
+            const excelOrganizeSection = document.getElementById('excel-organize-section');
 
             // SRT转Excel元素
             const srtDropArea = document.getElementById('srt-drop-area');
@@ -345,29 +396,74 @@
             const excelError = document.getElementById('excel-error');
             const excelErrorMessage = document.getElementById('excel-error-message');
 
+            // Excel字幕脚本整理元素
+            const organizeDropArea = document.getElementById('organize-drop-area');
+            const organizeFileInput = document.getElementById('organize-file-input');
+            const organizePreview = document.getElementById('organize-preview');
+            const organizeContent = document.getElementById('organize-content');
+            const organizedResultPreview = document.getElementById('organized-result-preview');
+            const organizedContent = document.getElementById('organized-content');
+            const organizeActions = document.getElementById('organize-actions');
+            const organizeBtn = document.getElementById('organize-btn');
+            const resetOrganizeBtn = document.getElementById('reset-organize-btn');
+            const organizeResult = document.getElementById('organize-result');
+            const downloadOrganizedBtn = document.getElementById('download-organized-btn');
+            const organizeError = document.getElementById('organize-error');
+            const organizeErrorMessage = document.getElementById('organize-error-message');
+
             // 选项卡切换
             srtToExcelTab.addEventListener('click', () => {
+                // 重置所有选项卡样式
+                resetAllTabs();
+                // 设置当前选项卡样式
                 srtToExcelTab.classList.add('tab-active');
-                excelToSrtTab.classList.remove('tab-active');
-                excelToSrtTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                // 显示对应内容区域
                 srtToExcelSection.classList.remove('hidden');
                 excelToSrtSection.classList.add('hidden');
+                excelOrganizeSection.classList.add('hidden');
                 resetSRTConversion();
             });
 
             excelToSrtTab.addEventListener('click', () => {
+                // 重置所有选项卡样式
+                resetAllTabs();
+                // 设置当前选项卡样式
                 excelToSrtTab.classList.add('tab-active');
-                srtToExcelTab.classList.remove('tab-active');
-                srtToExcelTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                // 显示对应内容区域
                 excelToSrtSection.classList.remove('hidden');
                 srtToExcelSection.classList.add('hidden');
+                excelOrganizeSection.classList.add('hidden');
                 resetExcelConversion();
             });
 
-            // SRT文件拖放处理
+            excelOrganizeTab.addEventListener('click', () => {
+                // 重置所有选项卡样式
+                resetAllTabs();
+                // 设置当前选项卡样式
+                excelOrganizeTab.classList.add('tab-active-tertiary');
+                // 显示对应内容区域
+                excelOrganizeSection.classList.remove('hidden');
+                srtToExcelSection.classList.add('hidden');
+                excelToSrtSection.classList.add('hidden');
+                resetOrganizeConversion();
+            });
+
+            // 重置所有选项卡样式
+            function resetAllTabs() {
+                srtToExcelTab.classList.remove('tab-active', 'tab-active-tertiary');
+                excelToSrtTab.classList.remove('tab-active', 'tab-active-tertiary');
+                excelOrganizeTab.classList.remove('tab-active', 'tab-active-tertiary');
+                
+                srtToExcelTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                excelToSrtTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                excelOrganizeTab.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+            }
+
+            // 通用文件拖放处理
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                 srtDropArea.addEventListener(eventName, preventDefaults, false);
                 excelDropArea.addEventListener(eventName, preventDefaults, false);
+                organizeDropArea.addEventListener(eventName, preventDefaults, false);
             });
 
             function preventDefaults(e) {
@@ -378,11 +474,13 @@
             ['dragenter', 'dragover'].forEach(eventName => {
                 srtDropArea.addEventListener(eventName, highlightSRT, false);
                 excelDropArea.addEventListener(eventName, highlightExcel, false);
+                organizeDropArea.addEventListener(eventName, highlightOrganize, false);
             });
 
             ['dragleave', 'drop'].forEach(eventName => {
                 srtDropArea.addEventListener(eventName, unhighlightSRT, false);
                 excelDropArea.addEventListener(eventName, unhighlightExcel, false);
+                organizeDropArea.addEventListener(eventName, unhighlightOrganize, false);
             });
 
             function highlightSRT() {
@@ -401,8 +499,18 @@
                 excelDropArea.classList.remove('file-drop-active');
             }
 
+            function highlightOrganize() {
+                organizeDropArea.classList.add('border-tertiary', 'bg-tertiary/10');
+            }
+
+            function unhighlightOrganize() {
+                organizeDropArea.classList.remove('border-tertiary', 'bg-tertiary/10');
+            }
+
+            // 拖放文件处理
             srtDropArea.addEventListener('drop', handleSRTDrop, false);
             excelDropArea.addEventListener('drop', handleExcelDrop, false);
+            organizeDropArea.addEventListener('drop', handleOrganizeDrop, false);
 
             function handleSRTDrop(e) {
                 const dt = e.dataTransfer;
@@ -420,25 +528,40 @@
                 }
             }
 
-            // 文件选择处理 - 修复二次弹窗问题的核心
+            function handleOrganizeDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) {
+                    handleOrganizeFile(file);
+                }
+            }
+
+            // 文件选择处理
             srtFileInput.addEventListener('change', function(e) {
-                e.stopPropagation(); // 阻止事件冒泡
+                e.stopPropagation();
                 if (this.files.length > 0) {
                     handleSRTFile(this.files[0]);
                 }
             });
 
             excelFileInput.addEventListener('change', function(e) {
-                e.stopPropagation(); // 阻止事件冒泡
+                e.stopPropagation();
                 if (this.files.length > 0) {
                     handleExcelFile(this.files[0]);
+                }
+            });
+
+            organizeFileInput.addEventListener('change', function(e) {
+                e.stopPropagation();
+                if (this.files.length > 0) {
+                    handleOrganizeFile(this.files[0]);
                 }
             });
 
             // 为文件选择标签添加事件处理，防止冒泡
             document.querySelectorAll('.file-label').forEach(label => {
                 label.addEventListener('click', function(e) {
-                    e.stopPropagation(); // 关键：防止点击事件冒泡到父容器
+                    e.stopPropagation();
                 });
             });
 
@@ -449,6 +572,10 @@
 
             excelDropArea.addEventListener('click', () => {
                 excelFileInput.click();
+            });
+
+            organizeDropArea.addEventListener('click', () => {
+                organizeFileInput.click();
             });
 
             // 处理SRT文件
@@ -548,7 +675,7 @@
                 return subtitles;
             }
 
-            // 处理Excel文件
+            // 处理Excel文件（用于Excel转SRT）
             function handleExcelFile(file) {
                 // 检查文件类型
                 if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
@@ -571,7 +698,7 @@
                         // 转换为JSON
                         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                         
-                        // 验证Excel格式
+                        // 验证Excel格式（更新为5列）
                         validateExcelFormat(jsonData);
                         
                         // 存储数据（跳过标题行）
@@ -596,7 +723,55 @@
                 reader.readAsArrayBuffer(file);
             }
 
-            // 验证Excel格式
+            // 处理Excel文件（用于字幕脚本整理）
+            function handleOrganizeFile(file) {
+                // 检查文件类型
+                if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                    showOrganizeError('请选择Excel格式的文件（.xlsx 或 .xls）');
+                    return;
+                }
+
+                originalFileName = file.name.replace(/\.(xlsx|xls)$/, '');
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // 获取第一个工作表
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // 转换为JSON
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        // 验证Excel格式（字幕脚本整理专用）
+                        validateOrganizeExcelFormat(jsonData);
+                        
+                        // 存储原始数据
+                        organizeData = jsonData;
+                        
+                        // 显示预览
+                        displayOrganizePreview(jsonData);
+                        organizePreview.classList.remove('hidden');
+                        
+                        // 显示操作按钮
+                        organizeActions.classList.remove('hidden');
+                        hideOrganizeError();
+                    } catch (error) {
+                        showOrganizeError('解析Excel文件时出错：' + error.message);
+                    }
+                };
+
+                reader.onerror = function() {
+                    showOrganizeError('读取文件时出错，请重试');
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+
+            // 验证Excel格式（用于Excel转SRT，更新为5列）
             function validateExcelFormat(data) {
                 // 检查是否有数据
                 if (data.length < 2) {
@@ -605,15 +780,15 @@
                 
                 // 检查标题行
                 const headerRow = data[0];
-                if (headerRow.length < 4) {
-                    throw new Error('Excel文件格式不正确，至少需要4列数据');
+                if (headerRow.length < 5) {
+                    throw new Error('Excel文件格式不正确，至少需要5列数据（包含"新字幕"列）');
                 }
                 
                 // 检查标题是否符合要求（不区分大小写）
-                const expectedHeaders = ['序号', '开始时间码', '结束时间码', '字幕内容'];
-                const actualHeaders = headerRow.slice(0, 4).map(h => h.toString().trim());
+                const expectedHeaders = ['序号', '开始时间码', '结束时间码', '字幕内容', '新字幕'];
+                const actualHeaders = headerRow.slice(0, 5).map(h => h.toString().trim());
                 
-                for (let i = 0; i < 4; i++) {
+                for (let i = 0; i < 5; i++) {
                     if (actualHeaders[i].toLowerCase() !== expectedHeaders[i].toLowerCase()) {
                         throw new Error(`Excel文件第${i+1}列标题应为"${expectedHeaders[i]}"，实际为"${actualHeaders[i]}"`);
                     }
@@ -625,14 +800,46 @@
                 }
             }
 
-            // 显示Excel预览
+            // 验证Excel格式（用于字幕脚本整理）
+            function validateOrganizeExcelFormat(data) {
+                // 检查是否有数据
+                if (data.length < 1) {
+                    throw new Error('Excel文件内容为空，请检查文件');
+                }
+                
+                // 检查列数，只能有一列
+                if (data[0].length > 1) {
+                    throw new Error('Excel文件格式不正确，只能包含一列数据');
+                }
+                
+                // 检查标题行是否为"字幕内容"
+                const header = data[0][0] ? data[0][0].toString().trim() : '';
+                if (header.toLowerCase() !== '字幕内容') {
+                    throw new Error(`Excel文件第一行标题应为"字幕内容"，实际为"${header}"`);
+                }
+                
+                // 检查是否有字幕数据
+                let hasContent = false;
+                for (let i = 1; i < data.length; i++) {
+                    if (data[i] && data[i][0] && data[i][0].toString().trim() !== '') {
+                        hasContent = true;
+                        break;
+                    }
+                }
+                
+                if (!hasContent) {
+                    throw new Error('Excel文件中没有找到有效的字幕内容');
+                }
+            }
+
+            // 显示Excel预览（用于Excel转SRT，更新为5列）
             function displayExcelPreview(data) {
                 // 创建表格
                 let html = '<table class="min-w-full border-collapse">';
                 
                 // 表头
                 html += '<thead><tr class="bg-gray-100">';
-                data[0].slice(0, 4).forEach(header => {
+                data[0].slice(0, 5).forEach(header => {
                     html += `<th class="border p-2 text-left">${header}</th>`;
                 });
                 html += '</tr></thead>';
@@ -642,22 +849,84 @@
                 const rowsToShow = Math.min(10, data.length - 1);
                 for (let i = 1; i <= rowsToShow; i++) {
                     html += '<tr class="' + (i % 2 === 0 ? 'bg-gray-50' : 'bg-white') + '">';
-                    data[i].slice(0, 4).forEach(cell => {
-                        html += `<td class="border p-2">${cell || ''}</td>`;
-                    });
+                    // 显示5列数据
+                    for (let j = 0; j < 5; j++) {
+                        const cellContent = data[i][j] || '';
+                        // 为新字幕列添加特殊样式
+                        const cellClass = j === 4 ? 'text-blue-600' : '';
+                        html += `<td class="border p-2 ${cellClass}">${cellContent}</td>`;
+                    }
                     html += '</tr>';
                 }
                 
                 // 如果有更多行，显示省略提示
                 if (data.length - 1 > rowsToShow) {
-                    html += '<tr><td colspan="4" class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
+                    html += '<tr><td colspan="5" class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
                 }
                 
                 html += '</tbody></table>';
                 excelContent.innerHTML = html;
             }
 
-            // 转换SRT到Excel
+            // 显示Excel预览（用于字幕脚本整理）
+            function displayOrganizePreview(data) {
+                // 创建表格
+                let html = '<table class="min-w-full border-collapse">';
+                
+                // 表头
+                html += '<thead><tr class="bg-gray-100">';
+                html += `<th class="border p-2 text-left">${data[0][0] || ''}</th>`;
+                html += '</tr></thead>';
+                
+                // 数据行（最多显示10行）
+                html += '<tbody>';
+                const rowsToShow = Math.min(10, data.length - 1);
+                for (let i = 1; i <= rowsToShow; i++) {
+                    html += '<tr class="' + (i % 2 === 0 ? 'bg-gray-50' : 'bg-white') + '">';
+                    html += `<td class="border p-2 ${!data[i] || !data[i][0] ? 'text-gray-400 italic' : ''}">${data[i] && data[i][0] ? data[i][0] : '[空白行]'}</td>`;
+                    html += '</tr>';
+                }
+                
+                // 如果有更多行，显示省略提示
+                if (data.length - 1 > rowsToShow) {
+                    html += '<tr><td class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
+                }
+                
+                html += '</tbody></table>';
+                organizeContent.innerHTML = html;
+            }
+
+            // 显示整理后的Excel预览
+            function displayOrganizedPreview(data) {
+                // 创建表格
+                let html = '<table class="min-w-full border-collapse">';
+                
+                // 表头
+                html += '<thead><tr class="bg-gray-100">';
+                html += '<th class="border p-2 text-left">序号</th>';
+                html += '<th class="border p-2 text-left">字幕内容</th>';
+                html += '</tr></thead>';
+                
+                // 数据行（最多显示10行）
+                html += '<tbody>';
+                const rowsToShow = Math.min(10, data.length - 1);
+                for (let i = 1; i <= rowsToShow; i++) {
+                    html += '<tr class="' + (i % 2 === 0 ? 'bg-gray-50' : 'bg-white') + '">';
+                    html += `<td class="border p-2">${data[i][0]}</td>`;
+                    html += `<td class="border p-2">${data[i][1]}</td>`;
+                    html += '</tr>';
+                }
+                
+                // 如果有更多行，显示省略提示
+                if (data.length - 1 > rowsToShow) {
+                    html += '<tr><td colspan="2" class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
+                }
+                
+                html += '</tbody></table>';
+                organizedContent.innerHTML = html;
+            }
+
+            // 转换SRT到Excel（新增"新字幕"列）
             convertSrtBtn.addEventListener('click', () => {
                 if (!srtData || srtData.length === 0) {
                     showSRTERROR('没有可转换的SRT数据，请重新上传文件');
@@ -665,18 +934,19 @@
                 }
 
                 try {
-                    // 创建工作簿和工作表
+                    // 创建工作簿和工作表，新增"新字幕"列
                     const wsData = [
-                        ['序号', '开始时间码', '结束时间码', '字幕内容'] // 表头
+                        ['序号', '开始时间码', '结束时间码', '字幕内容', '新字幕'] // 表头增加"新字幕"列
                     ];
                     
-                    // 添加数据行
+                    // 添加数据行，"新字幕"列初始为空
                     srtData.forEach(subtitle => {
                         wsData.push([
                             subtitle.sequence,
                             subtitle.startTime,
                             subtitle.endTime,
-                            subtitle.text
+                            subtitle.text,
+                            '' // 新字幕列，初始为空
                         ]);
                     });
                     
@@ -702,7 +972,7 @@
                 }
             });
 
-            // 转换Excel到SRT
+            // 转换Excel到SRT（优先使用"新字幕"列内容，允许新字幕列为空）
             convertExcelBtn.addEventListener('click', () => {
                 if (!excelData || excelData.length === 0) {
                     showExcelError('没有可转换的Excel数据，请重新上传文件');
@@ -713,15 +983,25 @@
                     let srtContent = '';
                     
                     excelData.forEach((row, index) => {
-                        // 验证行数据
-                        if (!row || row.length < 4) {
-                            throw new Error(`第${index + 2}行数据不完整，需要包含序号、开始时间码、结束时间码和字幕内容`);
+                        // 检查行数据是否存在
+                        if (!row) {
+                            throw new Error(`第${index + 2}行数据不存在`);
                         }
                         
+                        // 检查是否有至少4列数据（前4列必须存在，第5列新字幕可为空）
+                        if (row.length < 4) {
+                            throw new Error(`第${index + 2}行数据不完整，至少需要包含前4列（序号、开始时间码、结束时间码、字幕内容）`);
+                        }
+                        
+                        // 提取各列数据（第5列可能不存在，设置为默认空值）
                         const sequence = row[0];
                         const startTime = row[1];
                         const endTime = row[2];
-                        const text = row[3];
+                        const originalText = row[3];
+                        const newText = row.length >= 5 ? row[4] : ''; // 处理可能没有第5列的情况
+                        
+                        // 确定使用的文本：优先使用新字幕，如果为空则使用原字幕
+                        const textToUse = (newText && newText.toString().trim() !== '') ? newText : originalText;
                         
                         // 验证时间格式
                         if (!isValidTimeFormat(startTime)) {
@@ -732,15 +1012,20 @@
                             throw new Error(`第${index + 2}行的结束时间码格式不正确，应为 HH:MM:SS,mmm`);
                         }
                         
-                        // 验证字幕内容
-                        if (!text || text.toString().trim() === '') {
-                            throw new Error(`第${index + 2}行的字幕内容不能为空`);
+                        // 验证原字幕内容不能为空（新字幕可以为空）
+                        if (!originalText || originalText.toString().trim() === '') {
+                            throw new Error(`第${index + 2}行的"字幕内容"列不能为空`);
+                        }
+                        
+                        // 验证最终使用的字幕内容
+                        if (!textToUse || textToUse.toString().trim() === '') {
+                            throw new Error(`第${index + 2}行的字幕内容不能为空（新字幕和原字幕均为空）`);
                         }
                         
                         // 添加到SRT内容
                         srtContent += `${sequence}\n`;
                         srtContent += `${startTime} --> ${endTime}\n`;
-                        srtContent += `${text}\n\n`;
+                        srtContent += `${textToUse}\n\n`;
                     });
                     
                     // 隐藏操作按钮，显示结果
@@ -763,6 +1048,60 @@
                     
                 } catch (error) {
                     showExcelError('转换为SRT时出错：' + error.message);
+                }
+            });
+
+            // 整理Excel字幕脚本
+            organizeBtn.addEventListener('click', () => {
+                if (!organizeData || organizeData.length === 0) {
+                    showOrganizeError('没有可整理的Excel数据，请重新上传文件');
+                    return;
+                }
+
+                try {
+                    // 步骤1：删除空白行
+                    // 保留标题行，然后过滤掉内容为空的行
+                    const filteredData = [organizeData[0]]; // 保留标题行
+                    
+                    for (let i = 1; i < organizeData.length; i++) {
+                        const row = organizeData[i];
+                        // 检查行是否存在且第一个单元格有内容
+                        if (row && row[0] && row[0].toString().trim() !== '') {
+                            filteredData.push(row);
+                        }
+                    }
+                    
+                    // 步骤2：在左侧添加序号列
+                    const resultData = [['序号', '字幕内容']]; // 新标题行
+                    
+                    // 从1开始添加序号
+                    for (let i = 1; i < filteredData.length; i++) {
+                        resultData.push([i, filteredData[i][0]]);
+                    }
+                    
+                    // 显示处理后的预览
+                    displayOrganizedPreview(resultData);
+                    organizedResultPreview.classList.remove('hidden');
+                    
+                    // 隐藏操作按钮，显示结果
+                    organizeActions.classList.add('hidden');
+                    organizeResult.classList.remove('hidden');
+                    
+                    // 准备下载功能
+                    downloadOrganizedBtn.onclick = function() {
+                        // 创建工作表
+                        const ws = XLSX.utils.aoa_to_sheet(resultData);
+                        
+                        // 创建工作簿并添加工作表
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, "整理后的字幕");
+                        
+                        // 生成Excel文件并下载
+                        XLSX.writeFile(wb, `${originalFileName}_整理后.xlsx`);
+                    };
+                    
+                } catch (error) {
+                    showOrganizeError('整理字幕脚本时出错：' + error.message);
                 }
             });
 
@@ -800,6 +1139,22 @@
                 originalFileName = '';
             }
 
+            // 重置字幕脚本整理
+            resetOrganizeBtn.addEventListener('click', resetOrganizeConversion);
+
+            function resetOrganizeConversion() {
+                organizeFileInput.value = '';
+                organizeData = null;
+                organizePreview.classList.add('hidden');
+                organizedResultPreview.classList.add('hidden');
+                organizeContent.innerHTML = '';
+                organizedContent.innerHTML = '';
+                organizeActions.classList.add('hidden');
+                organizeResult.classList.add('hidden');
+                hideOrganizeError();
+                originalFileName = '';
+            }
+
             // 错误处理函数
             function showSRTERROR(message) {
                 srtErrorMessage.textContent = message;
@@ -820,8 +1175,18 @@
             function hideExcelError() {
                 excelError.classList.add('hidden');
             }
+
+            function showOrganizeError(message) {
+                organizeErrorMessage.textContent = message;
+                organizeError.classList.remove('hidden');
+                organizeResult.classList.add('hidden');
+            }
+
+            function hideOrganizeError() {
+                organizeError.classList.add('hidden');
+            }
         });
     </script>
 
-    </body></html>
     
+    </body></html>
