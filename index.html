@@ -735,12 +735,15 @@
                         
                         // 提取字幕内容
                         const textLines = lines.slice(timeLineIndex + 1);
-                        const text = textLines.join('\n').trim();
-                        
+                        let text = textLines.join('\n').trim();
+                         
+                        // 移除HTML标签（在解析阶段就处理）
+                        text = text.replace(/<[^>]*>/g, '');
+                         
                         if (!text) {
                             throw new Error('字幕内容不能为空');
                         }
-                        
+                         
                         subtitles.push({
                             sequence,
                             startTime,
@@ -1044,7 +1047,7 @@
                              subtitle.sequence,
                              subtitle.startTime,
                              subtitle.endTime,
-                             subtitle.text.replace(/<[^>]*>/g, ''), // 移除HTML标签
+                             subtitle.text.replace(/<[^>]*>/g, ''), // 再次确保移除所有HTML标签
                              '' // 新字幕列，初始为空
                          ]);
                      });
