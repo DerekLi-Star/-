@@ -677,8 +677,10 @@
                 reader.onload = function(e) {
                     try {
                         const content = e.target.result;
+                        // 移除预览内容中的HTML标签
+                        const cleanedContent = content.replace(/<[^>]*>/g, '');
                         // 显示预览
-                        srtContent.textContent = content.length > 1000 ? content.substring(0, 1000) + '...' : content;
+                        srtContent.textContent = cleanedContent.length > 1000 ? cleanedContent.substring(0, 1000) + '...' : cleanedContent;
                         srtPreview.classList.remove('hidden');
                         
                         // 解析SRT内容
