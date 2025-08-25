@@ -1044,7 +1044,7 @@
                              subtitle.sequence,
                              subtitle.startTime,
                              subtitle.endTime,
-                             subtitle.text,
+                             subtitle.text.replace(/<[^>]*>/g, ''), // 移除HTML标签
                              '' // 新字幕列，初始为空
                          ]);
                      });
