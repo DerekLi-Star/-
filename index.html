@@ -73,7 +73,7 @@
             <p class="text-gray-600 text-lg max-w-2xl mx-auto">最后更新时间：2025.08.25&nbsp; &nbsp; 问题反馈/需求开发 飞书私聊 Shaw Li</p>
         </section>
 
-        <!-- 转换选项卡 - 调整为三个等宽的按钮，增加边框并加粗文字 -->
+        <!-- 转换选项卡 - 调整为四个等宽的按钮，增加边框并加粗文字 -->
         <div class="mb-8 overflow-hidden border border-gray-200 rounded-t-xl">
             <div class="flex flex-nowrap">
                 <button id="srt-to-excel-tab" class="tab-active flex-1 py-4 px-3 font-bold text-base border-r border-gray-300 rounded-t-lg tab-transition text-center relative overflow-hidden">
@@ -82,8 +82,11 @@
                 <button id="excel-to-srt-tab" class="flex-1 py-4 px-3 font-bold text-base text-gray-500 border-r border-gray-300 hover:text-gray-700 hover:border-gray-400 rounded-t-lg tab-transition text-center relative overflow-hidden">
                     <i class="fa fa-file-excel-o mr-2"></i>Excel 转 SRT
                 </button>
-                <button id="excel-organize-tab" class="flex-1 py-4 px-3 font-bold text-base text-gray-500 hover:text-gray-700 hover:border-gray-400 rounded-t-lg tab-transition text-center relative overflow-hidden">
+                <button id="excel-organize-tab" class="flex-1 py-4 px-3 font-bold text-base text-gray-500 border-r border-gray-300 hover:text-gray-700 hover:border-gray-400 rounded-t-lg tab-transition text-center relative overflow-hidden">
                     <i class="fa fa-table mr-2"></i>Excel字幕脚本整理
+                </button>
+                <button id="series-subtitle-tab" class="flex-1 py-4 px-3 font-bold text-base text-gray-500 hover:text-gray-700 hover:border-gray-400 rounded-t-lg tab-transition text-center relative overflow-hidden">
+                    <i class="fa fa-film mr-2"></i>系列视频字幕轴制作
                 </button>
             </div>
         </div>
@@ -333,6 +336,99 @@
                     <p id="organize-error-message" class="text-red-600 text-base"></p>
                 </div>
             </div>
+
+            <!-- 系列视频字幕轴制作区域 -->
+            <div id="series-subtitle-section" class="hidden">
+                <h3 class="text-2xl font-bold mb-6 flex items-center">
+                    <i class="fa fa-film text-accent mr-2"></i>系列视频字幕轴制作
+                </h3>
+
+                <!-- 功能说明 -->
+                <div class="bg-purple-50 border border-purple-100 rounded-lg p-4 mb-6">
+                    <h4 class="text-purple-800 font-medium mb-2 flex items-center text-xl">
+                        <i class="fa fa-info-circle mr-2"></i>功能说明
+                    </h4>
+                    <p class="text-purple-700 text-base mb-3">此功能可以根据Excel文件生成系列视频的字幕轴SRT文件</p>
+                    <ul class="text-purple-700 text-base space-y-2 ml-6 list-disc">
+                        <li>上传的Excel文件应包含两列数据</li>
+                        <li>第一列标题为"视频编号"，第二列标题为"字幕内容"</li>
+                        <li>相同视频编号的字幕将被分组为同一条视频</li>
+                        <li>每条字幕持续时间为3秒，字幕之间间隔45秒</li>
+                        <li>每条视频的第一个字幕前会添加一个5秒的视频编号字幕</li>
+                    </ul>
+                </div>
+
+                <!-- 模板下载 -->
+                <div class="mb-6 text-center">
+                    <button id="download-template-btn" class="bg-accent/10 hover:bg-accent/20 text-accent font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base">
+                        <i class="fa fa-download mr-2"></i>下载Excel模板文件
+                    </button>
+                </div>
+
+                <!-- 文件上传区域 -->
+                <div id="series-drop-area" class="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center mb-6 cursor-pointer transition-all duration-300">
+                    <i class="fa fa-file-excel-o text-5xl text-gray-400 mb-4 transition-colors"></i>
+                    <h4 class="text-xl font-medium mb-2">拖放Excel文件到这里，或点击选择文件</h4>
+                    <p class="text-gray-500 text-lg mb-4">支持.xlsx和.xls格式，请确保符合上述格式要求</p>
+                    <label class="bg-accent/10 hover:bg-accent/20 text-accent font-medium px-5 py-3 rounded-lg transition-colors inline-block text-base file-label">
+                        <i class="fa fa-folder-open mr-2"></i>选择Excel文件
+                        <input type="file" id="series-file-input" class="hidden" accept=".xlsx, .xls">
+                    </label>
+                </div>
+
+                <!-- 预览区域 -->
+                <div id="series-preview" class="hidden mb-6 max-h-60 overflow-y-auto p-4 border rounded-lg bg-gray-50">
+                    <h4 class="text-xl font-medium mb-3">表格内容预览</h4>
+                    <div id="series-content" class="text-base text-gray-700"></div>
+                </div>
+
+                <!-- 处理后预览区域 -->
+                <div id="series-result-preview" class="hidden mb-6 max-h-60 overflow-y-auto p-4 border rounded-lg bg-gray-50">
+                    <h4 class="text-xl font-medium mb-3">生成的SRT内容预览</h4>
+                    <pre id="series-srt-content" class="text-base text-gray-700 whitespace-pre-wrap"></pre>
+                </div>
+
+                <!-- 处理按钮 -->
+                <div id="series-actions" class="hidden flex justify-center gap-4 mb-6">
+                    <button id="generate-series-btn" class="bg-accent hover:bg-accent/90 text-white font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-md flex items-center text-base">
+                        <i class="fa fa-magic mr-2"></i>生成字幕轴SRT
+                    </button>
+                    <button id="reset-series-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-sm flex items-center text-base">
+                        <i class="fa fa-refresh mr-2"></i>重置
+                    </button>
+                </div>
+
+                <!-- 加载指示器 -->
+                 <div id="series-loading" class="hidden flex justify-center items-center py-8">
+                     <div class="text-center">
+                         <div class="loading-spinner mx-auto mb-3"></div>
+                         <p class="text-gray-600">正在处理，请稍候...</p>
+                     </div>
+                 </div>
+
+                 <!-- 处理结果 -->
+                 <div id="series-result" class="hidden">
+                    <div class="p-4 border rounded-lg bg-green-50 mb-4">
+                        <h4 class="text-xl font-medium mb-2 text-green-700 flex items-center">
+                            <i class="fa fa-check-circle mr-2"></i>生成成功
+                        </h4>
+                        <p class="text-green-600 text-base">系列视频字幕轴SRT文件已成功生成，点击下方按钮下载</p>
+                    </div>
+                    <div class="flex justify-center">
+                        <button id="download-series-srt-btn" class="bg-accent hover:bg-accent/90 text-white font-medium px-6 py-3 rounded-lg transition-all transform hover:scale-105 shadow-md flex items-center text-base">
+                            <i class="fa fa-download mr-2"></i>下载SRT文件
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 错误提示 -->
+                <div id="series-error" class="hidden p-4 border rounded-lg bg-red-50 mb-4">
+                    <h4 class="text-xl font-medium mb-2 text-red-700 flex items-center">
+                        <i class="fa fa-exclamation-circle mr-2"></i>生成失败
+                    </h4>
+                    <p id="series-error-message" class="text-red-600 text-base"></p>
+                </div>
+            </div>
         </div>
 
         <!-- 批量修改字幕教程 -->
@@ -444,6 +540,25 @@
             const organizeError = document.getElementById('organize-error');
             const organizeErrorMessage = document.getElementById('organize-error-message');
 
+            // 系列视频字幕轴制作元素
+            const seriesSubtitleTab = document.getElementById('series-subtitle-tab');
+            const seriesSubtitleSection = document.getElementById('series-subtitle-section');
+            const downloadTemplateBtn = document.getElementById('download-template-btn');
+            const seriesDropArea = document.getElementById('series-drop-area');
+            const seriesFileInput = document.getElementById('series-file-input');
+            const seriesPreview = document.getElementById('series-preview');
+            const seriesContent = document.getElementById('series-content');
+            const seriesResultPreview = document.getElementById('series-result-preview');
+            const seriesSRTContent = document.getElementById('series-srt-content');
+            const seriesActions = document.getElementById('series-actions');
+            const generateSeriesBtn = document.getElementById('generate-series-btn');
+            const resetSeriesBtn = document.getElementById('reset-series-btn');
+            const seriesResult = document.getElementById('series-result');
+            const downloadSeriesSRTBtn = document.getElementById('download-series-srt-btn');
+            const seriesError = document.getElementById('series-error');
+            const seriesErrorMessage = document.getElementById('series-error-message');
+            let seriesData = null;
+
             // 选项卡切换
             srtToExcelTab.addEventListener('click', () => {
                 // 重置所有选项卡样式
@@ -499,7 +614,28 @@
                 }, 100);
                 srtToExcelSection.classList.add('hidden');
                 excelToSrtSection.classList.add('hidden');
+                seriesSubtitleSection.classList.add('hidden');
                 resetOrganizeConversion();
+            });
+
+            seriesSubtitleTab.addEventListener('click', () => {
+                // 重置所有选项卡样式
+                resetAllTabs();
+                // 添加选中动画
+                seriesSubtitleTab.classList.add('tab-active', 'scale-[1.03]');
+                setTimeout(() => {
+                    seriesSubtitleTab.classList.remove('scale-[1.03]');
+                }, 300);
+                // 显示对应内容区域
+                seriesSubtitleSection.classList.remove('hidden');
+                seriesSubtitleSection.classList.add('opacity-0');
+                setTimeout(() => {
+                    seriesSubtitleSection.classList.remove('opacity-0');
+                }, 100);
+                srtToExcelSection.classList.add('hidden');
+                excelToSrtSection.classList.add('hidden');
+                excelOrganizeSection.classList.add('hidden');
+                resetSeriesConversion();
             });
 
             // 重置所有选项卡样式
@@ -538,6 +674,10 @@
                     highlightOrganize();
                     this.classList.add('file-drop-hover');
                 }, false);
+                seriesDropArea.addEventListener(eventName, function() {
+                    highlightSeries();
+                    this.classList.add('file-drop-hover');
+                }, false);
             });
 
             ['dragleave', 'drop'].forEach(eventName => {
@@ -553,12 +693,17 @@
                     unhighlightOrganize();
                     this.classList.remove('file-drop-hover');
                 }, false);
+                seriesDropArea.addEventListener(eventName, function() {
+                    unhighlightSeries();
+                    this.classList.remove('file-drop-hover');
+                }, false);
             });
 
             ['dragleave', 'drop'].forEach(eventName => {
                 srtDropArea.addEventListener(eventName, unhighlightSRT, false);
                 excelDropArea.addEventListener(eventName, unhighlightExcel, false);
                 organizeDropArea.addEventListener(eventName, unhighlightOrganize, false);
+                seriesDropArea.addEventListener(eventName, unhighlightSeries, false);
             });
 
             function highlightSRT() {
@@ -585,10 +730,19 @@
                 organizeDropArea.classList.remove('border-tertiary', 'bg-tertiary/10');
             }
 
+            function highlightSeries() {
+                seriesDropArea.classList.add('border-accent', 'bg-accent/10');
+            }
+
+            function unhighlightSeries() {
+                seriesDropArea.classList.remove('border-accent', 'bg-accent/10');
+            }
+
             // 拖放文件处理
             srtDropArea.addEventListener('drop', handleSRTDrop, false);
             excelDropArea.addEventListener('drop', handleExcelDrop, false);
             organizeDropArea.addEventListener('drop', handleOrganizeDrop, false);
+            seriesDropArea.addEventListener('drop', handleSeriesDrop, false);
 
             function handleSRTDrop(e) {
                 const dt = e.dataTransfer;
@@ -614,6 +768,14 @@
                 }
             }
 
+            function handleSeriesDrop(e) {
+                const dt = e.dataTransfer;
+                const file = dt.files[0];
+                if (file) {
+                    handleSeriesFile(file);
+                }
+            }
+
             // 文件选择处理
             srtFileInput.addEventListener('change', function(e) {
                 e.stopPropagation();
@@ -636,6 +798,13 @@
                 }
             });
 
+            seriesFileInput.addEventListener('change', function(e) {
+                e.stopPropagation();
+                if (this.files.length > 0) {
+                    handleSeriesFile(this.files[0]);
+                }
+            });
+
             // 为文件选择标签添加事件处理，防止冒泡
             document.querySelectorAll('.file-label').forEach(label => {
                 label.addEventListener('click', function(e) {
@@ -654,6 +823,10 @@
 
             organizeDropArea.addEventListener('click', () => {
                 organizeFileInput.click();
+            });
+
+            seriesDropArea.addEventListener('click', () => {
+                seriesFileInput.click();
             });
 
             // 处理SRT文件
@@ -875,6 +1048,61 @@
                 reader.readAsArrayBuffer(file);
             }
 
+            // 处理Excel文件（用于系列视频字幕轴制作）
+            function handleSeriesFile(file) {
+                // 检查文件类型
+                if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+                    showSeriesError('请选择Excel格式的文件（.xlsx 或 .xls）');
+                    return;
+                }
+
+                // 检查文件大小（限制10MB）
+                const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+                if (file.size > MAX_SIZE) {
+                    showSeriesError(`文件大小超过限制（${MAX_SIZE/1024/1024}MB），请选择较小的文件`);
+                    return;
+                }
+
+                originalFileName = file.name.replace(/\.(xlsx|xls)$/, '');
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        
+                        // 获取第一个工作表
+                        const firstSheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[firstSheetName];
+                        
+                        // 转换为JSON
+                        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        // 验证Excel格式（系列视频字幕轴制作专用）
+                        validateSeriesExcelFormat(jsonData);
+                        
+                        // 存储数据（跳过标题行）
+                        seriesData = jsonData.slice(1);
+                        
+                        // 显示预览
+                        displaySeriesPreview(jsonData);
+                        seriesPreview.classList.remove('hidden');
+                        
+                        // 显示操作按钮
+                        seriesActions.classList.remove('hidden');
+                        hideSeriesError();
+                    } catch (error) {
+                        showSeriesError('解析Excel文件时出错：' + error.message);
+                    }
+                };
+
+                reader.onerror = function() {
+                    showSeriesError('读取文件时出错，请重试');
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+
             // 验证Excel格式（用于Excel转SRT，更新为5列）
             function validateExcelFormat(data) {
                 // 检查是否有数据
@@ -927,6 +1155,35 @@
                 
                 if (!hasContent) {
                     throw new Error('Excel文件中没有找到有效的字幕内容');
+                }
+            }
+
+            // 验证Excel格式（用于系列视频字幕轴制作）
+            function validateSeriesExcelFormat(data) {
+                // 检查是否有数据
+                if (data.length < 2) {
+                    throw new Error('Excel文件内容为空或格式不正确，至少需要标题行和一行数据');
+                }
+                
+                // 检查标题行
+                const headerRow = data[0];
+                if (headerRow.length < 2) {
+                    throw new Error('Excel文件格式不正确，至少需要2列数据');
+                }
+                
+                // 检查标题是否符合要求（不区分大小写）
+                const expectedHeaders = ['视频编号', '字幕内容'];
+                const actualHeaders = headerRow.slice(0, 2).map(h => h.toString().trim());
+                
+                for (let i = 0; i < 2; i++) {
+                    if (actualHeaders[i].toLowerCase() !== expectedHeaders[i].toLowerCase()) {
+                        throw new Error(`Excel文件第${i+1}列标题应为"${expectedHeaders[i]}"，实际为"${actualHeaders[i]}"`);
+                    }
+                }
+                
+                // 检查至少有一行数据
+                if (data.length < 2) {
+                    throw new Error('Excel文件中没有找到字幕数据，请确保有至少一行数据');
                 }
             }
 
@@ -1022,6 +1279,40 @@
                 
                 html += '</tbody></table>';
                 organizedContent.innerHTML = html;
+            }
+
+            // 显示Excel预览（用于系列视频字幕轴制作）
+            function displaySeriesPreview(data) {
+                // 创建表格
+                let html = '<table class="min-w-full border-collapse">';
+                
+                // 表头
+                html += '<thead><tr class="bg-gray-100">';
+                data[0].slice(0, 2).forEach(header => {
+                    html += `<th class="border p-2 text-left">${header}</th>`;
+                });
+                html += '</tr></thead>';
+                
+                // 数据行（最多显示10行）
+                html += '<tbody>';
+                const rowsToShow = Math.min(10, data.length - 1);
+                for (let i = 1; i <= rowsToShow; i++) {
+                    html += '<tr class="' + (i % 2 === 0 ? 'bg-gray-50' : 'bg-white') + '">';
+                    // 显示2列数据
+                    for (let j = 0; j < 2; j++) {
+                        const cellContent = data[i][j] || '';
+                        html += `<td class="border p-2">${cellContent}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                
+                // 如果有更多行，显示省略提示
+                if (data.length - 1 > rowsToShow) {
+                    html += '<tr><td colspan="2" class="border p-2 text-center text-gray-500">... 还有更多行 ...</td></tr>';
+                }
+                
+                html += '</tbody></table>';
+                seriesContent.innerHTML = html;
             }
 
             // 转换SRT到Excel（新增"新字幕"列）
@@ -1183,7 +1474,7 @@
                      // 步骤1：删除空白行
                      // 保留标题行，然后过滤掉内容为空的行
                      const filteredData = [organizeData[0]]; // 保留标题行
-                      
+                       
                      for (let i = 1; i < organizeData.length; i++) {
                          const row = organizeData[i];
                          // 检查行是否存在且第一个单元格有内容
@@ -1191,41 +1482,199 @@
                              filteredData.push(row);
                          }
                      }
-                      
+                       
                      // 步骤2：在左侧添加序号列
                      const resultData = [['序号', '新字幕']]; // 新标题行
-                       
+                        
                      // 从1开始添加序号
                      for (let i = 1; i < filteredData.length; i++) {
                          resultData.push([i, filteredData[i][0]]);
                      }
-                      
+                       
                      // 显示处理后的预览
                      displayOrganizedPreview(resultData);
                      organizedResultPreview.classList.remove('hidden');
-                      
+                       
                      // 隐藏加载指示器，显示结果
                      document.getElementById('organize-loading').classList.add('hidden');
                      organizeResult.classList.remove('hidden');
-                      
+                       
                      // 准备下载功能
                      downloadOrganizedBtn.onclick = function() {
                          // 创建工作表
                          const ws = XLSX.utils.aoa_to_sheet(resultData);
-                          
+                           
                          // 创建工作簿并添加工作表
                          const wb = XLSX.utils.book_new();
                          XLSX.utils.book_append_sheet(wb, ws, "整理后的字幕");
-                          
+                           
                          // 生成Excel文件并下载
                          XLSX.writeFile(wb, `${originalFileName}_整理后.xlsx`);
                      };
-                      
+                       
                  } catch (error) {
                      // 隐藏加载指示器
                      document.getElementById('organize-loading').classList.add('hidden');
                      showOrganizeError('整理字幕脚本时出错：' + error.message);
                  }
+            });
+
+            // 生成系列视频字幕轴SRT文件
+            generateSeriesBtn.addEventListener('click', () => {
+                if (!seriesData || seriesData.length === 0) {
+                    showSeriesError('没有可处理的Excel数据，请重新上传文件');
+                    return;
+                }
+
+                // 显示加载指示器，隐藏其他区域
+                seriesActions.classList.add('hidden');
+                seriesResult.classList.add('hidden');
+                seriesResultPreview.classList.add('hidden');
+                hideSeriesError();
+                document.getElementById('series-loading').classList.remove('hidden');
+
+                try {
+                    // 按视频编号分组
+                    const videoGroups = {};
+                    
+                    seriesData.forEach((row, index) => {
+                        // 检查行数据是否存在
+                        if (!row) {
+                            throw new Error(`第${index + 2}行数据不存在`);
+                        }
+                         
+                        // 检查是否有至少2列数据
+                        if (row.length < 2) {
+                            throw new Error(`第${index + 2}行数据不完整，至少需要包含2列数据`);
+                        }
+                         
+                        const videoId = row[0];
+                        const subtitleText = row[1];
+                         
+                        // 检查视频编号和字幕内容是否为空
+                        if (!videoId || videoId.toString().trim() === '') {
+                            throw new Error(`第${index + 2}行的"视频编号"列不能为空`);
+                        }
+                         
+                        if (!subtitleText || subtitleText.toString().trim() === '') {
+                            throw new Error(`第${index + 2}行的"字幕内容"列不能为空`);
+                        }
+                         
+                        // 按视频编号分组
+                        if (!videoGroups[videoId]) {
+                            videoGroups[videoId] = [];
+                        }
+                        videoGroups[videoId].push(subtitleText.toString().trim());
+                    });
+
+                    // 生成SRT内容
+                    let srtContent = '';
+                    let currentSequence = 1;
+                    let currentTime = 0; // 单位：秒
+                    
+                    // 遍历所有视频组
+                    Object.keys(videoGroups).forEach(videoId => {
+                        const subtitles = videoGroups[videoId];
+                        
+                        // 格式化视频编号（如V01, V11等）
+                        const formattedVideoId = formatVideoId(videoId);
+                        
+                        // 1. 添加视频编号字幕（持续5秒）
+                        const startTime1 = secondsToSrtTime(currentTime);
+                        const endTime1 = secondsToSrtTime(currentTime + 5);
+                        srtContent += `${currentSequence++}\n`;
+                        srtContent += `${startTime1} --> ${endTime1}\n`;
+                        srtContent += `${formattedVideoId}\n\n`;
+                        
+                        // 更新当前时间
+                        currentTime += 5;
+                        
+                        // 2. 添加该视频的所有字幕（每条持续3秒，间隔45秒）
+                        subtitles.forEach(text => {
+                            const startTime2 = secondsToSrtTime(currentTime);
+                            const endTime2 = secondsToSrtTime(currentTime + 3);
+                            srtContent += `${currentSequence++}\n`;
+                            srtContent += `${startTime2} --> ${endTime2}\n`;
+                            srtContent += `${text}\n\n`;
+                            
+                            // 更新当前时间（3秒字幕 + 45秒间隔）
+                            currentTime += 48;
+                        });
+                    });
+
+                    // 显示处理后的预览
+                    seriesSRTContent.textContent = srtContent.length > 1000 ? srtContent.substring(0, 1000) + '...' : srtContent;
+                    seriesResultPreview.classList.remove('hidden');
+                      
+                    // 隐藏加载指示器，显示结果
+                    document.getElementById('series-loading').classList.add('hidden');
+                    seriesResult.classList.remove('hidden');
+                      
+                    // 准备下载功能
+                    downloadSeriesSRTBtn.onclick = function() {
+                        // 创建Blob并下载
+                        const blob = new Blob([srtContent], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${originalFileName}_系列字幕.srt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    };
+                       
+                } catch (error) {
+                    // 隐藏加载指示器
+                    document.getElementById('series-loading').classList.add('hidden');
+                    showSeriesError('生成字幕轴时出错：' + error.message);
+                }
+            });
+
+            // 格式化视频编号（如V01, V11等）
+            function formatVideoId(id) {
+                // 尝试转换为数字
+                const num = parseInt(id);
+                if (!isNaN(num)) {
+                    return `V${num.toString().padStart(2, '0')}`;
+                }
+                // 如果不是纯数字，直接返回V+id
+                return `V${id}`;
+            }
+
+            // 将秒数转换为SRT时间格式（HH:MM:SS,mmm）
+            function secondsToSrtTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                const ms = Math.floor((seconds - Math.floor(seconds)) * 1000);
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')},${ms.toString().padStart(3, '0')}`;
+            }
+
+            // 下载Excel模板文件
+            downloadTemplateBtn.addEventListener('click', function() {
+                try {
+                    // 创建工作簿和工作表
+                    const wsData = [
+                        ['视频编号', '字幕内容'], // 表头
+                        ['1', '第一条视频的第一句字幕'],
+                        ['1', '第一条视频的第二句字幕'],
+                        ['2', '第二条视频的第一句字幕']
+                    ];
+                      
+                    // 创建工作表
+                    const ws = XLSX.utils.aoa_to_sheet(wsData);
+                      
+                    // 创建工作簿并添加工作表
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, "系列视频字幕模板");
+                      
+                    // 生成Excel文件并下载
+                    XLSX.writeFile(wb, `系列视频字幕轴模板.xlsx`);
+                } catch (error) {
+                    showSeriesError('下载模板时出错：' + error.message);
+                }
             });
 
             // 验证时间格式 (HH:MM:SS,mmm)
@@ -1278,6 +1727,22 @@
                 originalFileName = '';
             }
 
+            // 重置系列视频字幕轴制作
+            resetSeriesBtn.addEventListener('click', resetSeriesConversion);
+
+            function resetSeriesConversion() {
+                seriesFileInput.value = '';
+                seriesData = null;
+                seriesPreview.classList.add('hidden');
+                seriesResultPreview.classList.add('hidden');
+                seriesContent.innerHTML = '';
+                seriesSRTContent.textContent = '';
+                seriesActions.classList.add('hidden');
+                seriesResult.classList.add('hidden');
+                hideSeriesError();
+                originalFileName = '';
+            }
+
             // 错误处理函数
             function showSRTERROR(message) {
                 srtErrorMessage.textContent = message;
@@ -1307,6 +1772,16 @@
 
             function hideOrganizeError() {
                 organizeError.classList.add('hidden');
+            }
+
+            function showSeriesError(message) {
+                seriesErrorMessage.textContent = message;
+                seriesError.classList.remove('hidden');
+                seriesResult.classList.add('hidden');
+            }
+
+            function hideSeriesError() {
+                seriesError.classList.add('hidden');
             }
         });
     </script>
